@@ -11,7 +11,8 @@
   "scripts": {
     "test": "jest",
     "build": "webpack",
-    "serve": "webpack-dev-server --open"
+    "serve": "webpack-dev-server --open",
+    "tsc-build": "tsc -b --verbose"
   },
   "devDependencies": {
     "@types/jest": "^24.0.0",
