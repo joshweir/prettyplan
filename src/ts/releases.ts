@@ -8,7 +8,7 @@ export function getCurrentVersion(): string {
 }
 
 export function getLastUsedVersion(): string {
-    return window.localStorage.getItem('lastUsedVersion');
+    return window.localStorage.getItem('lastUsedVersion') || '';
 }
 
 export function updateLastUsedVersion(): void {

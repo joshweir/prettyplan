@@ -1,6 +1,6 @@
 export interface ResourceId {
     name: string;
-    type: string;
+    type: string | null;
     prefixes: string[];
 }
 export interface Warning {
@@ -19,7 +19,7 @@ export interface Diff {
     property: string;
     old?: string;
     new: string;
-    forcesNewResource?: string;
+    forcesNewResource?: boolean;
 }
 export interface Action {
     id: ResourceId;
@@ -37,7 +37,7 @@ export function parse(terraformPlan: string): Plan {
     var changeSummary = extractChangeSummary(terraformPlan);
     var changes = extractIndividualChanges(changeSummary);
 
-    var plan = { warnings: warnings, actions: [] };
+    var plan = { warnings: warnings, actions: [] as Action[] };
     for (var i = 0; i < changes.length; i++) {
         plan.actions.push(parseChange(changes[i]));
     }
@@ -47,7 +47,7 @@ export function parse(terraformPlan: string): Plan {
 
 export function parseWarnings(terraformPlan: string): Warning[] {
     let warningRegex: RegExp = new RegExp('Warning: (.*:)(.*)', 'gm');
-    let warning: RegExpExecArray;
+    let warning: RegExpExecArray | null;
     let warnings: Warning[] = [];
 
     do {
@@ -85,15 +85,15 @@ export function extractIndividualChanges(changeSummary: string): string[] {
 export function parseChange(change: string): Action {
     var changeTypeAndIdRegex = new RegExp('([~+-]|-\/\+|<=) (.*)$', 'gm');
     var changeTypeAndId = changeTypeAndIdRegex.exec(change);
-    var changeTypeSymbol = changeTypeAndId[1];
-    var resourceId = changeTypeAndId[2];
+    var changeTypeSymbol = changeTypeAndId ? changeTypeAndId[1] : '';
+    var resourceId = changeTypeAndId ? changeTypeAndId[2] : '';
 
-    var type;
+    var type: ChangeType;
     type = parseChangeSymbol(changeTypeSymbol);
 
     //Workaround for recreations showing up as '+' changes
     if (resourceId.match('(new resource required)')) {
-        type = 'recreate';
+        type = ChangeType.Recreate;
         resourceId = resourceId.replace(' (new resource required)', '');
     }
 
@@ -121,7 +121,7 @@ export function parseId(resourceId: string): ResourceId {
     return { name: resourceName, type: resourceType, prefixes: resourcePrefixes };
 }
 
-export function parseChangeSymbol(changeTypeSymbol): ChangeType {
+export function parseChangeSymbol(changeTypeSymbol: string): ChangeType {
     if (changeTypeSymbol === "-")
         return ChangeType.Destroy;
     else if (changeTypeSymbol === "+")
@@ -136,7 +136,7 @@ export function parseChangeSymbol(changeTypeSymbol): ChangeType {
         return ChangeType.Unknown;
 }
 
-export function parseSingleValueDiffs(change): Diff[] {
+export function parseSingleValueDiffs(change: string): Diff[] {
     var propertyAndValueRegex = new RegExp('\\s*(.*?): *(?:<computed>|"(|[\\S\\s]*?[^\\\\])")', 'gm');
     var diff;
     var diffs = [];
@@ -154,10 +154,10 @@ export function parseSingleValueDiffs(change): Diff[] {
     return diffs;
 }
 
-export function parseNewAndOldValueDiffs(change): Diff[] {
+export function parseNewAndOldValueDiffs(change: string): Diff[] {
     var propertyAndNewAndOldValueRegex = new RegExp('\\s*(.*?): *(?:"(|[\\S\\s]*?[^\\\\])")[\\S\\s]*?=> *(?:<computed>|"(|[\\S\\s]*?[^\\\\])")( \\(forces new resource\\))?', 'gm');
     var diff;
-    var diffs = [];
+    var diffs: Diff[] = [];
 
     do {
         diff = propertyAndNewAndOldValueRegex.exec(change);

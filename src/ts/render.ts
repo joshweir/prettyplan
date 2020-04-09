@@ -22,6 +22,7 @@ export function unHidePlan(): void {
 
 export function showReleaseNotification(version: string): void {
     const notificationElement = document.getElementById('release-notification');
+    if (!notificationElement) return;
     notificationElement.innerHTML = components.releaseNotification(version);
     removeClass(notificationElement, 'hidden');
 }
@@ -37,11 +38,13 @@ export function showReleaseNotes(): void {
 export function render(plan: Plan): void {
     if (plan.warnings) {
         const warningList = document.getElementById('warnings');
+        if (!warningList) return;
         warningList.innerHTML = plan.warnings.map(components.warning).join('');
     }
 
     if (plan.actions) {
         const actionList = document.getElementById('actions');
+        if (!actionList) return;
         actionList.innerHTML = plan.actions.map(components.action).join('');
     }
 }

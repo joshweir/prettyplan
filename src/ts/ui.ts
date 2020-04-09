@@ -1,11 +1,14 @@
 export function accordion(element: Element): void {
-    const changes = element.parentElement.getElementsByClassName('changes');
-    for (var i = 0; i < changes.length; i++) {
-        toggleClass(changes[i], 'collapsed');
+    if (element.parentElement) {
+        const changes = element.parentElement.getElementsByClassName('changes');
+        for (var i = 0; i < changes.length; i++) {
+            toggleClass(changes[i], 'collapsed');
+        }
     }
 }
 
-export function toggleClass(element: Element, className: string): void {
+export function toggleClass(element: Element | null, className: string): void {
+    if (!element) return;
     if (!element.className.match(className)) {
         element.className += ' ' + className;
     }
@@ -14,11 +17,13 @@ export function toggleClass(element: Element, className: string): void {
     }
 }
 
-export function addClass(element: Element, className: string): void {
+export function addClass(element: Element | null, className: string): void {
+    if (!element) return;
     if (!element.className.match(className)) element.className += ' ' + className;
 }
 
-export function removeClass(element: Element, className: string): void {
+export function removeClass(element: Element | null, className: string): void {
+    if (!element) return;
     element.className = element.className.replace(className, '');
 }
 
@@ -44,7 +49,8 @@ export function collapseAll(): void {
     toggleClass(document.querySelector('.collapse-all'), 'hidden');
 }
 
-export function removeChildren(element: Element): void {
+export function removeChildren(element: Element | null): void {
+    if (!element) return;
     while (element.lastChild) {
         element.removeChild(element.lastChild);
     }
@@ -61,5 +67,5 @@ export function createModalContainer(): HTMLElement {
 
 export function closeModal(): void {
     const modalElement = document.getElementById('modal-container');
-    document.body.removeChild(modalElement);
+    document.body.removeChild(modalElement as any);
 }
